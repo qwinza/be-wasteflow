@@ -1,17 +1,17 @@
 package com.wasteflow.domain;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-
-@Entity
-@DiscriminatorValue("HAZARDOUS")
+/**
+ * HazardousWaste — Subclass untuk Sampah B3 (Bahan Berbahaya dan Beracun).
+ * Rumus poin: (berat × multiplier) × 0.8
+ * Poin lebih rendah sebagai disinsentif membuang B3 sembarangan,
+ * namun tetap diberi reward agar warga tidak membuangnya ke lingkungan.
+ */
 public class HazardousWaste extends Waste {
 
     @Override
     public double calculatePoints(double multiplier) {
-        // Base formula: weight * multiplier + hazardous penalty or flat rate depending on policy
-        // Usually hazardous waste gives lower points to discourage mixing, or flat rate for safe disposal.
-        return (getBerat() * multiplier) * 0.8; 
+        // Penalty B3: ×0.8 (20% lebih rendah, disinsentif tapi tetap reward)
+        return (getBerat() * multiplier) * 0.8;
     }
 
     @Override

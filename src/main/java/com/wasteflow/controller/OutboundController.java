@@ -1,14 +1,17 @@
 package com.wasteflow.controller;
 
-import com.wasteflow.entity.WasteOutbound;
+import com.wasteflow.dto.request.OutboundRequest;
+import com.wasteflow.dto.response.ApiResponse;
+import com.wasteflow.dto.response.OutboundResponse;
 import com.wasteflow.service.OutboundService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/outbounds")
@@ -19,22 +22,17 @@ public class OutboundController {
     private OutboundService outboundService;
 
     @PostMapping
-    public ResponseEntity<?> createOutbound(@RequestBody Map<String, Object> payload) {
-        try {
-            Long locationId = Long.valueOf(payload.get("locationId").toString());
-            Long categoryId = Long.valueOf(payload.get("categoryId").toString());
-            BigDecimal weight = new BigDecimal(payload.get("berat").toString());
-            String destination = payload.get("tujuanDistribusi").toString();
-
-            WasteOutbound outbound = outboundService.createOutbound(locationId, categoryId, weight, destination);
-            return ResponseEntity.ok(outbound);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse<OutboundResponse>> createOutbound(
+            @Valid @RequestBody OutboundRequest request) {
+        OutboundResponse data = outboundService.createOutbound(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Pengeluaran sampah berhasil dicatat", data));
     }
 
     @GetMapping
-    public ResponseEntity<List<WasteOutbound>> getAllOutbounds() {
-        return ResponseEntity.ok(outboundService.getAllOutbounds());
+    public ResponseEntity<ApiResponse<List<OutboundResponse>>> getAllOutbounds() {
+        List<OutboundResponse> data = outboundService.getAllOutbounds();
+        return ResponseEntity.ok(ApiResponse.success("Berhasil mengambil data pengeluaran", data));
     }
 }

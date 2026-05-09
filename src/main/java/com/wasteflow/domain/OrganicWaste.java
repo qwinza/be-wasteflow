@@ -1,16 +1,16 @@
 package com.wasteflow.domain;
 
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-
-@Entity
-@DiscriminatorValue("ORGANIC")
+/**
+ * OrganicWaste — Subclass untuk Sampah Organik.
+ * Rumus poin: (berat × multiplier) × 1.1
+ * Bonus 10% karena sampah organik mudah dikompos.
+ */
 public class OrganicWaste extends Waste {
 
     @Override
     public double calculatePoints(double multiplier) {
-        // Base formula: weight * multiplier + organic bonus
-        return (getBerat() * multiplier) * 1.1; 
+        // Bonus organik: ×1.1 (10% lebih tinggi)
+        return (getBerat() * multiplier) * 1.1;
     }
 
     @Override

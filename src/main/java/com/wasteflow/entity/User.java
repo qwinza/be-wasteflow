@@ -1,17 +1,24 @@
 package com.wasteflow.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
+/**
+ * User — Entitas pengguna sistem (ADMIN dan WARGA).
+ * Soft delete: DELETE → UPDATE is_deleted = true.
+ */
 @Entity
 @Table(name = "users")
-@org.hibernate.annotations.SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=?")
-@org.hibernate.annotations.SQLRestriction("is_deleted = false")
+@SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted = false")
 public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String nama;
 
     @Column(unique = true, nullable = false)
@@ -25,6 +32,8 @@ public class User extends BaseEntity {
     private Role role;
 
     private String alamat;
+
+    public User() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

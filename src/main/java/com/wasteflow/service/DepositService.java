@@ -1,13 +1,14 @@
 package com.wasteflow.service;
 
-import com.wasteflow.domain.HazardousWaste;
-import com.wasteflow.domain.InorganicWaste;
-import com.wasteflow.domain.OrganicWaste;
 import com.wasteflow.domain.Waste;
+import com.wasteflow.domain.WasteFactory;
+import com.wasteflow.dto.request.DepositRequest;
+import com.wasteflow.dto.response.DepositResponse;
 import com.wasteflow.entity.User;
 import com.wasteflow.entity.WasteCategory;
 import com.wasteflow.entity.WasteDeposit;
 import com.wasteflow.entity.WasteLocation;
+import com.wasteflow.exception.ResourceNotFoundException;
 import com.wasteflow.repository.UserRepository;
 import com.wasteflow.repository.WasteCategoryRepository;
 import com.wasteflow.repository.WasteDepositRepository;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DepositService {
@@ -39,56 +41,59 @@ public class DepositService {
     private ReportService reportService;
 
     @Transactional
-    public WasteDeposit createDeposit(Long userId, Long categoryId, Long locationId, BigDecimal weight) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        WasteCategory category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-        WasteLocation location = locationRepository.findById(locationId)
-                .orElseThrow(() -> new RuntimeException("Location not found"));
+    public DepositResponse createDeposit(DepositRequest request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getUserId()));
 
-        // Check Capacity limit
-        BigDecimal currentCapacity = reportService.calculateCurrentCapacity(locationId);
-        if (currentCapacity.add(weight).compareTo(location.getKapasitasMaksKg()) > 0) {
-            throw new RuntimeException("Location capacity exceeded");
+        WasteCategory category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("WasteCategory", "id", request.getCategoryId()));
+
+        WasteLocation location = locationRepository.findById(request.getLocationId())
+                .orElseThrow(() -> new ResourceNotFoundException("WasteLocation", "id", request.getLocationId()));
+
+        BigDecimal currentStock = reportService.calculateCurrentCapacity(location.getId());
+        if (currentStock.add(request.getBerat()).compareTo(location.getKapasitasMaksKg()) > 0) {
+            throw new IllegalArgumentException(
+                String.format("Kapasitas lokasi '%s' terlampaui. Sisa kapasitas: %.2f kg",
+                    location.getNamaLokasi(),
+                    location.getKapasitasMaksKg().subtract(currentStock).doubleValue()));
         }
-
-        // Use Domain OOP to calculate points
-        Waste waste = createWasteDomainObject(category.getNamaKategori(), weight.doubleValue());
-        Double multiplier = category.getPointMultiplier() != null ? category.getPointMultiplier() : 1.0;
+        Waste waste = WasteFactory.createWaste(
+            category.getWasteType(),
+            request.getBerat().doubleValue()
+        );
+        double multiplier = category.getPointMultiplier() != null ? category.getPointMultiplier() : 1.0;
         double points = waste.calculatePoints(multiplier);
 
         WasteDeposit deposit = new WasteDeposit();
         deposit.setUser(user);
         deposit.setCategory(category);
         deposit.setLocation(location);
-        deposit.setBerat(weight);
+        deposit.setBerat(request.getBerat());
         deposit.setTanggal(LocalDate.now());
         deposit.setPoints(points);
 
-        return depositRepository.save(deposit);
+        WasteDeposit saved = depositRepository.save(deposit);
+        return DepositResponse.from(saved);
     }
 
-    public List<WasteDeposit> getAllDeposits() {
-        return depositRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<DepositResponse> getAllDeposits() {
+        return depositRepository.findAll()
+                .stream()
+                .map(DepositResponse::from)
+                .collect(Collectors.toList());
     }
 
-    public List<WasteDeposit> getDepositsByUser(Long userId) {
-        return depositRepository.findByUserId(userId);
-    }
+    @Transactional(readOnly = true)
+    public List<DepositResponse> getDepositsByUser(Long userId) {
+        // Pastikan user ada
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-    private Waste createWasteDomainObject(String categoryName, double weight) {
-        Waste waste;
-        if (categoryName.equalsIgnoreCase("Organik")) {
-            waste = new OrganicWaste();
-        } else if (categoryName.equalsIgnoreCase("Anorganik")) {
-            waste = new InorganicWaste();
-        } else if (categoryName.equalsIgnoreCase("B3")) {
-            waste = new HazardousWaste();
-        } else {
-            waste = new InorganicWaste();
-        }
-        waste.setBerat(weight);
-        return waste;
+        return depositRepository.findByUserId(userId)
+                .stream()
+                .map(DepositResponse::from)
+                .collect(Collectors.toList());
     }
 }

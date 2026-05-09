@@ -23,14 +23,12 @@ public class RecommendationService {
             return Map.of("recommendation", "Belum ada riwayat setoran. Mulai setor sampahmu untuk mendapatkan poin dan rekomendasi menarik!");
         }
 
-        // Group by category name and sum weights
         Map<String, Double> categoryWeights = deposits.stream()
                 .collect(Collectors.groupingBy(
                         d -> d.getCategory().getNamaKategori(),
                         Collectors.summingDouble(d -> d.getBerat().doubleValue())
                 ));
 
-        // Find the category with the most weight
         String maxCategory = "";
         double maxWeight = 0;
         for (Map.Entry<String, Double> entry : categoryWeights.entrySet()) {
