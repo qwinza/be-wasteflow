@@ -55,7 +55,8 @@ public class DepositService {
 
         // Use Domain OOP to calculate points
         Waste waste = createWasteDomainObject(category.getNamaKategori(), weight.doubleValue());
-        double points = waste.calculatePoints();
+        Double multiplier = category.getPointMultiplier() != null ? category.getPointMultiplier() : 1.0;
+        double points = waste.calculatePoints(multiplier);
 
         WasteDeposit deposit = new WasteDeposit();
         deposit.setUser(user);
@@ -77,15 +78,17 @@ public class DepositService {
     }
 
     private Waste createWasteDomainObject(String categoryName, double weight) {
+        Waste waste;
         if (categoryName.equalsIgnoreCase("Organik")) {
-            return new OrganicWaste(weight);
+            waste = new OrganicWaste();
         } else if (categoryName.equalsIgnoreCase("Anorganik")) {
-            return new InorganicWaste(weight);
+            waste = new InorganicWaste();
         } else if (categoryName.equalsIgnoreCase("B3")) {
-            return new HazardousWaste(weight);
+            waste = new HazardousWaste();
         } else {
-            // Defaulting to Inorganic if not specific
-            return new InorganicWaste(weight);
+            waste = new InorganicWaste();
         }
+        waste.setBerat(weight);
+        return waste;
     }
 }

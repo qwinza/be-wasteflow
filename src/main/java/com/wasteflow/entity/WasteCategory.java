@@ -15,6 +15,9 @@ public class WasteCategory extends BaseEntity {
 
     private String deskripsi;
 
+    @Column(name = "point_multiplier")
+    private Double pointMultiplier = 1.0;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -23,4 +26,7 @@ public class WasteCategory extends BaseEntity {
 
     public String getDeskripsi() { return deskripsi; }
     public void setDeskripsi(String deskripsi) { this.deskripsi = deskripsi; }
+
+    public Double getPointMultiplier() { return pointMultiplier; }
+    public void setPointMultiplier(Double pointMultiplier) { this.pointMultiplier = pointMultiplier; }
 }

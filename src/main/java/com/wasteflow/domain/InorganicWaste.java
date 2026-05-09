@@ -1,20 +1,20 @@
 package com.wasteflow.domain;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+@Entity
+@DiscriminatorValue("INORGANIC")
 public class InorganicWaste extends Waste {
 
-    private static final double POINTS_PER_KG = 20.0;
-
-    public InorganicWaste(double weightKg) {
-        super(weightKg);
-    }
-
     @Override
-    public double calculatePoints() {
-        return weightKg * POINTS_PER_KG;
+    public double calculatePoints(double multiplier) {
+        // Base formula: weight * multiplier + inorganic bonus
+        return (getBerat() * multiplier) * 1.5; 
     }
 
     @Override
     public String getWasteType() {
-        return "Anorganik";
+        return "INORGANIC";
     }
 }

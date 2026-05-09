@@ -1,20 +1,21 @@
 package com.wasteflow.domain;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+@Entity
+@DiscriminatorValue("HAZARDOUS")
 public class HazardousWaste extends Waste {
 
-    private static final double POINTS_PER_KG = 5.0;
-
-    public HazardousWaste(double weightKg) {
-        super(weightKg);
-    }
-
     @Override
-    public double calculatePoints() {
-        return weightKg * POINTS_PER_KG;
+    public double calculatePoints(double multiplier) {
+        // Base formula: weight * multiplier + hazardous penalty or flat rate depending on policy
+        // Usually hazardous waste gives lower points to discourage mixing, or flat rate for safe disposal.
+        return (getBerat() * multiplier) * 0.8; 
     }
 
     @Override
     public String getWasteType() {
-        return "B3";
+        return "HAZARDOUS";
     }
 }

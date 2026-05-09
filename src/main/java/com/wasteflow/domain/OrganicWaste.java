@@ -1,20 +1,20 @@
 package com.wasteflow.domain;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
+@Entity
+@DiscriminatorValue("ORGANIC")
 public class OrganicWaste extends Waste {
 
-    private static final double POINTS_PER_KG = 10.0;
-
-    public OrganicWaste(double weightKg) {
-        super(weightKg);
-    }
-
     @Override
-    public double calculatePoints() {
-        return weightKg * POINTS_PER_KG;
+    public double calculatePoints(double multiplier) {
+        // Base formula: weight * multiplier + organic bonus
+        return (getBerat() * multiplier) * 1.1; 
     }
 
     @Override
     public String getWasteType() {
-        return "Organik";
+        return "ORGANIC";
     }
 }
