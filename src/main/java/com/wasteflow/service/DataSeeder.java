@@ -64,13 +64,11 @@ public class DataSeeder implements CommandLineRunner {
             System.out.println("Default Kawasan Account Created: rt01@wasteflow.com / rt01123");
         }
 
-        // Seed Categories
-        if (categoryRepository.count() == 0) {
-            seedCategory("Organik", 1.5);
-            seedCategory("Anorganik", 1.0);
-            seedCategory("B3", 2.0);
-            System.out.println("Default categories seeded.");
-        }
+        // Enforce Core Category Multipliers
+        seedOrUpdateCategory("Organik", 2.0);
+        seedOrUpdateCategory("Anorganik", 3.0);
+        seedOrUpdateCategory("B3", 1.0);
+        System.out.println("Core category multipliers enforced.");
 
         // Seed Default Location if empty
         if (locationRepository.count() == 0) {
@@ -82,8 +80,9 @@ public class DataSeeder implements CommandLineRunner {
         }
     }
 
-    private void seedCategory(String name, double multiplier) {
-        WasteCategory category = new WasteCategory();
+    private void seedOrUpdateCategory(String name, double multiplier) {
+        WasteCategory category = categoryRepository.findByNamaKategoriIgnoreCase(name)
+                .orElse(new WasteCategory());
         category.setNamaKategori(name);
         category.setPointMultiplier(multiplier);
         categoryRepository.save(category);
