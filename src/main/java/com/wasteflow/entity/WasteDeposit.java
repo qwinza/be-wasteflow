@@ -1,5 +1,6 @@
 package com.wasteflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -7,23 +8,30 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "waste_deposits")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class WasteDeposit extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"password", "hibernateLazyInitializer", "handler"})
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private WasteCategory category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private WasteLocation location;
+
+    @Column(name = "nama_sampah")
+    private String namaSampah;
 
     private BigDecimal berat;
     private LocalDate tanggal;
@@ -40,6 +48,9 @@ public class WasteDeposit extends BaseEntity {
 
     public WasteLocation getLocation() { return location; }
     public void setLocation(WasteLocation location) { this.location = location; }
+
+    public String getNamaSampah() { return namaSampah; }
+    public void setNamaSampah(String namaSampah) { this.namaSampah = namaSampah; }
 
     public BigDecimal getBerat() { return berat; }
     public void setBerat(BigDecimal berat) { this.berat = berat; }

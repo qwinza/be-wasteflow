@@ -39,7 +39,7 @@ public class DepositService {
     private ReportService reportService;
 
     @Transactional
-    public WasteDeposit createDeposit(Long userId, Long categoryId, Long locationId, BigDecimal weight) {
+    public WasteDeposit createDeposit(Long userId, Long categoryId, Long locationId, BigDecimal weight, String namaSampah) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         WasteCategory category = categoryRepository.findById(categoryId)
@@ -49,7 +49,9 @@ public class DepositService {
 
         // Check Capacity limit
         BigDecimal currentCapacity = reportService.calculateCurrentCapacity(locationId);
-        if (currentCapacity.add(weight).compareTo(location.getKapasitasMaksKg()) > 0) {
+        BigDecimal maxCapacity = location.getKapasitasMaksKg();
+        
+        if (maxCapacity != null && currentCapacity.add(weight).compareTo(maxCapacity) > 0) {
             throw new RuntimeException("Location capacity exceeded");
         }
 
@@ -62,6 +64,7 @@ public class DepositService {
         deposit.setUser(user);
         deposit.setCategory(category);
         deposit.setLocation(location);
+        deposit.setNamaSampah(namaSampah);
         deposit.setBerat(weight);
         deposit.setTanggal(LocalDate.now());
         deposit.setPoints(points);
@@ -73,8 +76,14 @@ public class DepositService {
         return depositRepository.findAll();
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<WasteDeposit> getDepositsByUser(Long userId) {
         return depositRepository.findByUserId(userId);
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<WasteDeposit> getDepositsByLocation(Long locationId) {
+        return depositRepository.findByLocationId(locationId);
     }
 
     private Waste createWasteDomainObject(String categoryName, double weight) {

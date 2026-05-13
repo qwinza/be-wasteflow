@@ -9,8 +9,7 @@ public class OrganicWaste extends Waste {
 
     @Override
     public double calculatePoints(double multiplier) {
-        // Base formula: weight * multiplier + organic bonus
-        return (getBerat() * multiplier) * 1.1; 
+        return getBerat() * 2.0; 
     }
 
     @Override

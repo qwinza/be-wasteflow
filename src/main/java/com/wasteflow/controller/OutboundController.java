@@ -21,10 +21,12 @@ public class OutboundController {
     @PostMapping
     public ResponseEntity<?> createOutbound(@RequestBody Map<String, Object> payload) {
         try {
-            Long locationId = Long.valueOf(payload.get("locationId").toString());
+                Long locationId = Long.valueOf(payload.get("locationId").toString());
             Long categoryId = Long.valueOf(payload.get("categoryId").toString());
             BigDecimal weight = new BigDecimal(payload.get("berat").toString());
-            String destination = payload.get("tujuanDistribusi").toString();
+            String destination = payload.containsKey("tujuanDistribusi")
+                    ? payload.get("tujuanDistribusi").toString()
+                    : payload.getOrDefault("keterangan", "").toString();
 
             WasteOutbound outbound = outboundService.createOutbound(locationId, categoryId, weight, destination);
             return ResponseEntity.ok(outbound);

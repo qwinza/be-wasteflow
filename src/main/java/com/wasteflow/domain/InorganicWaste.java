@@ -9,8 +9,7 @@ public class InorganicWaste extends Waste {
 
     @Override
     public double calculatePoints(double multiplier) {
-        // Base formula: weight * multiplier + inorganic bonus
-        return (getBerat() * multiplier) * 1.5; 
+        return getBerat() * 3.0; 
     }
 
     @Override
