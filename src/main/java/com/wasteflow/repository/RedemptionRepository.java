@@ -1,0 +1,11 @@
+package com.wasteflow.repository;
+
+import com.wasteflow.entity.Redemption;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public interface RedemptionRepository extends JpaRepository<Redemption, Long> {
+    List<Redemption> findByUserId(Long userId);
+}
