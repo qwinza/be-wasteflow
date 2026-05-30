@@ -5,7 +5,7 @@ import com.wasteflow.dto.response.ApiResponse;
 import com.wasteflow.dto.response.DepositResponse;
 import com.wasteflow.service.DepositService;
 
-import jakarta.persistence.Entity;
+import com.wasteflow.entity.WasteDeposit;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/deposits")
@@ -23,25 +24,31 @@ public class DepositController {
     private DepositService depositService;
 
     @PostMapping
-    public ResponseEntity<ApiResponse<DepositResponse>> createDeposit(
+    public ResponseEntity<WasteDeposit> createDeposit(
             @Valid @RequestBody DepositRequest request) {
-        DepositResponse data = depositService.createDeposit(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(
-                    String.format("Setoran berhasil! Poin didapat: %.2f", data.getPoints()), data));
+        WasteDeposit data = depositService.createDeposit(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(data);
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<DepositResponse>>> getAllDeposits() {
-        List<DepositResponse> data = depositService.getAllDeposits();
-        return ResponseEntity.ok(ApiResponse.success("Berhasil mengambil data setoran", data));
+    public ResponseEntity<List<WasteDeposit>> getAllDeposits() {
+        return ResponseEntity.ok(depositService.getAllDeposits());
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<ApiResponse<List<DepositResponse>>> getDepositsByUser(
-            @PathVariable Long userId) {
-        List<DepositResponse> data = depositService.getDepositsByUser(userId);
-        return ResponseEntity.ok(ApiResponse.success(
-            "Berhasil mengambil riwayat setoran user", data));
+    public ResponseEntity<List<WasteDeposit>> getDepositsByUser(@PathVariable("userId") Long userId) {
+        return ResponseEntity.ok(depositService.getDepositsByUser(userId));
+    }
+
+    @GetMapping("/filter/tps/{locationId}")
+    public ResponseEntity<?> getDepositsByLocation(@PathVariable("locationId") Long locationId) {
+        try {
+            List<WasteDeposit> deposits = depositService.getDepositsByLocation(locationId);
+            return ResponseEntity.ok(deposits);
+        } catch (Exception e) {
+            System.err.println("Error fetching deposits for location " + locationId + ": " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Gagal mengambil data: " + e.getMessage()));
+        }
     }
 }

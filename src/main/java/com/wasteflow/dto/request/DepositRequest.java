@@ -20,6 +20,8 @@ public class DepositRequest {
     @DecimalMin(value = "0.001", message = "Berat minimal 0.001 kg")
     private BigDecimal berat;
 
+    private String namaSampah;
+
     public DepositRequest() {}
 
     public Long getUserId() { return userId; }
@@ -33,4 +35,7 @@ public class DepositRequest {
 
     public BigDecimal getBerat() { return berat; }
     public void setBerat(BigDecimal berat) { this.berat = berat; }
+
+    public String getNamaSampah() { return namaSampah; }
+    public void setNamaSampah(String namaSampah) { this.namaSampah = namaSampah; }
 }

@@ -1,5 +1,7 @@
 package com.wasteflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -12,6 +14,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Table(name = "users")
 @SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted = false")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User extends BaseEntity {
 
     @Id
@@ -25,6 +28,7 @@ public class User extends BaseEntity {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Enumerated(EnumType.STRING)

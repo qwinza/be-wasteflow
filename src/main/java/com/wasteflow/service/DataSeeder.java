@@ -131,5 +131,28 @@ public class DataSeeder implements CommandLineRunner {
             locationRepository.save(location);
             System.out.printf("✅ [Seeder] Lokasi: %-35s | Kapasitas: %.0f kg%n", nama, kapasitas);
         }
+
+        // Enforce Core Category Multipliers
+        seedOrUpdateCategory("Organik", 2.0);
+        seedOrUpdateCategory("Anorganik", 3.0);
+        seedOrUpdateCategory("B3", 1.0);
+        System.out.println("Core category multipliers enforced.");
+
+        // Seed Default Location if empty
+        if (locationRepository.count() == 0) {
+            WasteLocation location = new WasteLocation();
+            location.setNamaLokasi("TPS Pusat WasteFlow");
+            location.setKapasitasMaksKg(new BigDecimal("1000.0"));
+            locationRepository.save(location);
+            System.out.println("Default location seeded.");
+        }
+    }
+
+    private void seedOrUpdateCategory(String name, double multiplier) {
+        WasteCategory category = categoryRepository.findByNamaKategoriIgnoreCase(name)
+                .orElse(new WasteCategory());
+        category.setNamaKategori(name);
+        category.setPointMultiplier(multiplier);
+        categoryRepository.save(category);
     }
 }

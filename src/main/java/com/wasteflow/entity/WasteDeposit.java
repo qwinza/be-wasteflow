@@ -1,5 +1,6 @@
 package com.wasteflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
@@ -15,23 +16,30 @@ import java.time.LocalDate;
 @Table(name = "waste_deposits")
 @SQLDelete(sql = "UPDATE waste_deposits SET is_deleted = true WHERE id=?")
 @SQLRestriction("is_deleted = false")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class WasteDeposit extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"password", "hibernateLazyInitializer", "handler"})
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private WasteCategory category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "location_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private WasteLocation location;
+
+    @Column(name = "nama_sampah")
+    private String namaSampah;
 
     @Column(nullable = false, precision = 10, scale = 3)
     private BigDecimal berat;
@@ -55,6 +63,9 @@ public class WasteDeposit extends BaseEntity {
 
     public WasteLocation getLocation() { return location; }
     public void setLocation(WasteLocation location) { this.location = location; }
+
+    public String getNamaSampah() { return namaSampah; }
+    public void setNamaSampah(String namaSampah) { this.namaSampah = namaSampah; }
 
     public BigDecimal getBerat() { return berat; }
     public void setBerat(BigDecimal berat) { this.berat = berat; }

@@ -3,7 +3,6 @@ package com.wasteflow.service;
 import com.wasteflow.domain.Waste;
 import com.wasteflow.domain.WasteFactory;
 import com.wasteflow.dto.request.DepositRequest;
-import com.wasteflow.dto.response.DepositResponse;
 import com.wasteflow.entity.User;
 import com.wasteflow.entity.WasteCategory;
 import com.wasteflow.entity.WasteDeposit;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class DepositService {
@@ -41,7 +39,7 @@ public class DepositService {
     private ReportService reportService;
 
     @Transactional
-    public DepositResponse createDeposit(DepositRequest request) {
+    public WasteDeposit createDeposit(DepositRequest request) {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getUserId()));
 
@@ -52,12 +50,15 @@ public class DepositService {
                 .orElseThrow(() -> new ResourceNotFoundException("WasteLocation", "id", request.getLocationId()));
 
         BigDecimal currentStock = reportService.calculateCurrentCapacity(location.getId());
-        if (currentStock.add(request.getBerat()).compareTo(location.getKapasitasMaksKg()) > 0) {
+        BigDecimal maxCapacity = location.getKapasitasMaksKg();
+        
+        if (maxCapacity != null && currentStock.add(request.getBerat()).compareTo(maxCapacity) > 0) {
             throw new IllegalArgumentException(
                 String.format("Kapasitas lokasi '%s' terlampaui. Sisa kapasitas: %.2f kg",
                     location.getNamaLokasi(),
-                    location.getKapasitasMaksKg().subtract(currentStock).doubleValue()));
+                    maxCapacity.subtract(currentStock).doubleValue()));
         }
+
         Waste waste = WasteFactory.createWaste(
             category.getWasteType(),
             request.getBerat().doubleValue()
@@ -69,31 +70,34 @@ public class DepositService {
         deposit.setUser(user);
         deposit.setCategory(category);
         deposit.setLocation(location);
+        deposit.setNamaSampah(request.getNamaSampah());
         deposit.setBerat(request.getBerat());
         deposit.setTanggal(LocalDate.now());
         deposit.setPoints(points);
 
-        WasteDeposit saved = depositRepository.save(deposit);
-        return DepositResponse.from(saved);
+        return depositRepository.save(deposit);
     }
 
     @Transactional(readOnly = true)
-    public List<DepositResponse> getAllDeposits() {
-        return depositRepository.findAll()
-                .stream()
-                .map(DepositResponse::from)
-                .collect(Collectors.toList());
+    public List<WasteDeposit> getAllDeposits() {
+        return depositRepository.findAll();
     }
 
     @Transactional(readOnly = true)
-    public List<DepositResponse> getDepositsByUser(Long userId) {
+    public List<WasteDeposit> getDepositsByUser(Long userId) {
         // Pastikan user ada
         userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
-        return depositRepository.findByUserId(userId)
-                .stream()
-                .map(DepositResponse::from)
-                .collect(Collectors.toList());
+        return depositRepository.findByUserId(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WasteDeposit> getDepositsByLocation(Long locationId) {
+        // Pastikan lokasi ada
+        locationRepository.findById(locationId)
+                .orElseThrow(() -> new ResourceNotFoundException("WasteLocation", "id", locationId));
+
+        return depositRepository.findByLocationId(locationId);
     }
 }
