@@ -4,6 +4,7 @@ import com.wasteflow.entity.*;
 import com.wasteflow.repository.UserRepository;
 import com.wasteflow.repository.WasteCategoryRepository;
 import com.wasteflow.repository.WasteLocationRepository;
+import com.wasteflow.repository.WasteDepositRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,13 +32,17 @@ public class DataSeeder implements CommandLineRunner {
     private WasteLocationRepository locationRepository;
 
     @Autowired
+    private WasteDepositRepository depositRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
-        seedUsers();
         seedCategories();
         seedLocations();
+        seedUsers();
+        seedDeposits();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -45,17 +50,20 @@ public class DataSeeder implements CommandLineRunner {
     // ─────────────────────────────────────────────────────────────
 
     private void seedUsers() {
+        WasteLocation locRT01 = locationRepository.findByNamaLokasiIgnoreCase("Bank Sampah Induk RT 01").orElse(null);
+        WasteLocation locBlokB = locationRepository.findByNamaLokasiIgnoreCase("Bank Sampah Blok B").orElse(null);
+
         createUserIfNotExists("Super Admin", "superadmin@wasteflow.com", "superadmin123", Role.ADMIN,
-            "Kantor Pusat WasteFlow");
+            "Kantor Pusat WasteFlow", null);
         createUserIfNotExists("Admin Bank Sampah", "admin@wasteflow.com", "admin123", Role.ADMIN,
-            "Kantor Pusat WasteFlow");
+            "Kantor Pusat WasteFlow", null);
         createUserIfNotExists("Budi Santoso (Demo Warga)", "rt01@wasteflow.com", "rt01123", Role.WARGA,
-            "Jl. Melati No. 12, Kawasan Perumahan Indah");
+            "Jl. Melati No. 12, Kawasan Perumahan Indah", locRT01);
         createUserIfNotExists("Siti Rahayu (Demo Warga)", "warga@wasteflow.com", "warga123", Role.WARGA,
-            "Jl. Mawar No. 5, Blok B");
+            "Jl. Mawar No. 5, Blok B", locBlokB);
     }
 
-    private void createUserIfNotExists(String nama, String email, String rawPassword, Role role, String alamat) {
+    private void createUserIfNotExists(String nama, String email, String rawPassword, Role role, String alamat, WasteLocation location) {
         if (!userRepository.existsByEmail(email)) {
             User user = new User();
             user.setNama(nama);
@@ -63,6 +71,7 @@ public class DataSeeder implements CommandLineRunner {
             user.setPassword(passwordEncoder.encode(rawPassword));
             user.setRole(role);
             user.setAlamat(alamat);
+            user.setLocation(location);
             userRepository.save(user);
             System.out.printf("✅ [Seeder] User: %-40s | Email: %-35s | Password: %s%n", nama, email, rawPassword);
         }
@@ -154,5 +163,43 @@ public class DataSeeder implements CommandLineRunner {
         category.setNamaKategori(name);
         category.setPointMultiplier(multiplier);
         categoryRepository.save(category);
+    }
+
+    private void seedDeposits() {
+        if (depositRepository.count() == 0) {
+            User budi = userRepository.findByEmail("rt01@wasteflow.com").orElse(null);
+            User siti = userRepository.findByEmail("warga@wasteflow.com").orElse(null);
+            WasteCategory organik = categoryRepository.findByNamaKategoriIgnoreCase("Organik").orElse(null);
+            WasteCategory anorganik = categoryRepository.findByNamaKategoriIgnoreCase("Anorganik").orElse(null);
+            WasteCategory b3 = categoryRepository.findByNamaKategoriIgnoreCase("B3").orElse(null);
+            WasteLocation location = locationRepository.findByNamaLokasiIgnoreCase("Bank Sampah Induk RT 01").orElse(null);
+
+            if (budi != null && location != null) {
+                if (organik != null) {
+                    createDeposit(budi, organik, location, new BigDecimal("50.0"), "Daun Kering & Sisa Makanan", 110.0);
+                }
+                if (anorganik != null) {
+                    createDeposit(budi, anorganik, location, new BigDecimal("120.0"), "Botol Plastik Bekas & Kardus", 540.0);
+                }
+            }
+            if (siti != null && location != null) {
+                if (b3 != null) {
+                    createDeposit(siti, b3, location, new BigDecimal("15.0"), "Baterai & Lampu Bekas", 12.0);
+                }
+            }
+            System.out.println("✅ [Seeder] Initial stock deposits seeded successfully.");
+        }
+    }
+
+    private void createDeposit(User user, WasteCategory category, WasteLocation location, BigDecimal berat, String namaSampah, double points) {
+        WasteDeposit deposit = new WasteDeposit();
+        deposit.setUser(user);
+        deposit.setCategory(category);
+        deposit.setLocation(location);
+        deposit.setNamaSampah(namaSampah);
+        deposit.setBerat(berat);
+        deposit.setTanggal(java.time.LocalDate.now());
+        deposit.setPoints(points);
+        depositRepository.save(deposit);
     }
 }

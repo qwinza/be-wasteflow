@@ -7,6 +7,8 @@ public class JwtResponse {
     private String email;
     private String nama;
     private String role;
+    private Long locationId;
+    private String locationName;
 
     public JwtResponse(String accessToken, Long id, String nama, String email, String role) {
         this.token = accessToken;
@@ -14,6 +16,16 @@ public class JwtResponse {
         this.nama = nama;
         this.email = email;
         this.role = role;
+    }
+
+    public JwtResponse(String accessToken, Long id, String nama, String email, String role, Long locationId, String locationName) {
+        this.token = accessToken;
+        this.id = id;
+        this.nama = nama;
+        this.email = email;
+        this.role = role;
+        this.locationId = locationId;
+        this.locationName = locationName;
     }
 
     public String getToken() { return token; }
@@ -33,4 +45,10 @@ public class JwtResponse {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public Long getLocationId() { return locationId; }
+    public void setLocationId(Long locationId) { this.locationId = locationId; }
+
+    public String getLocationName() { return locationName; }
+    public void setLocationName(String locationName) { this.locationName = locationName; }
 }

@@ -64,7 +64,7 @@ public class DepositService {
             request.getBerat().doubleValue()
         );
         double multiplier = category.getPointMultiplier() != null ? category.getPointMultiplier() : 1.0;
-        double points = waste.calculatePoints(multiplier);
+        double points = Math.round(waste.calculatePoints(multiplier) * 100.0) / 100.0;
 
         WasteDeposit deposit = new WasteDeposit();
         deposit.setUser(user);

@@ -23,7 +23,7 @@ public class FeedbackController {
     private FeedbackService feedbackService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<FeedbackResponse>>> getAll() {
         List<FeedbackResponse> data = feedbackService.getAll();
         return ResponseEntity.ok(ApiResponse.success("Berhasil mengambil semua feedback", data));
@@ -50,7 +50,7 @@ public class FeedbackController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id) {
         feedbackService.delete(id);
         return ResponseEntity.ok(ApiResponse.success("Feedback berhasil dihapus", null));

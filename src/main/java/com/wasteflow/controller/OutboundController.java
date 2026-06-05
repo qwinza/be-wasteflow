@@ -22,7 +22,7 @@ public class OutboundController {
     private OutboundService outboundService;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<OutboundResponse>> createOutbound(
             @Valid @RequestBody OutboundRequest request) {
         OutboundResponse data = outboundService.createOutbound(request);

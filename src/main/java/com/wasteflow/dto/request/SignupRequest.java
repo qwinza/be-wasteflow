@@ -18,6 +18,8 @@ public class SignupRequest {
     
     private String role; // optional, default is WARGA usually
 
+    private Long locationId;
+
     public String getNama() { return nama; }
     public void setNama(String nama) { this.nama = nama; }
 
@@ -32,4 +34,7 @@ public class SignupRequest {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public Long getLocationId() { return locationId; }
+    public void setLocationId(Long locationId) { this.locationId = locationId; }
 }

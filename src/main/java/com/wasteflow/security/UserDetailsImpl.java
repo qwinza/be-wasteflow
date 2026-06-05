@@ -19,25 +19,36 @@ public class UserDetailsImpl implements UserDetails {
     @JsonIgnore
     private String password;
 
+    private Long locationId;
+    private String locationName;
+
     private Collection<? extends GrantedAuthority> authorities;
 
     public UserDetailsImpl(Long id, String nama, String email, String password,
+                           Long locationId, String locationName,
                            Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.nama = nama;
         this.email = email;
         this.password = password;
+        this.locationId = locationId;
+        this.locationName = locationName;
         this.authorities = authorities;
     }
 
     public static UserDetailsImpl build(User user) {
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 
+        Long locationId = user.getLocation() != null ? user.getLocation().getId() : null;
+        String locationName = user.getLocation() != null ? user.getLocation().getNamaLokasi() : null;
+
         return new UserDetailsImpl(
                 user.getId(),
                 user.getNama(),
                 user.getEmail(),
                 user.getPassword(),
+                locationId,
+                locationName,
                 authorities);
     }
 
@@ -61,6 +72,14 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public String getPassword() {
         return password;
+    }
+
+    public Long getLocationId() {
+        return locationId;
+    }
+
+    public String getLocationName() {
+        return locationName;
     }
 
     @Override

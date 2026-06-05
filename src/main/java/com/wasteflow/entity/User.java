@@ -37,6 +37,10 @@ public class User extends BaseEntity {
 
     private String alamat;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "location_id")
+    private WasteLocation location;
+
     public User() {}
 
     public Long getId() { return id; }
@@ -56,4 +60,7 @@ public class User extends BaseEntity {
 
     public String getAlamat() { return alamat; }
     public void setAlamat(String alamat) { this.alamat = alamat; }
+
+    public WasteLocation getLocation() { return location; }
+    public void setLocation(WasteLocation location) { this.location = location; }
 }

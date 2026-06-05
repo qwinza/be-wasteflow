@@ -7,6 +7,8 @@ import com.wasteflow.dto.response.MessageResponse;
 import com.wasteflow.entity.Role;
 import com.wasteflow.entity.User;
 import com.wasteflow.repository.UserRepository;
+import com.wasteflow.repository.WasteLocationRepository;
+import com.wasteflow.entity.WasteLocation;
 import com.wasteflow.security.JwtUtils;
 import com.wasteflow.security.UserDetailsImpl;
 import jakarta.validation.Valid;
@@ -31,6 +33,9 @@ public class AuthController {
     UserRepository userRepository;
 
     @Autowired
+    WasteLocationRepository wasteLocationRepository;
+
+    @Autowired
     PasswordEncoder encoder;
 
     @Autowired
@@ -52,7 +57,9 @@ public class AuthController {
                                                  userDetails.getId(), 
                                                  userDetails.getNama(), 
                                                  userDetails.getEmail(), 
-                                                 role));
+                                                 role,
+                                                 userDetails.getLocationId(),
+                                                 userDetails.getLocationName()));
     }
 
     @PostMapping("/signup")
@@ -86,6 +93,12 @@ public class AuthController {
         }
 
         user.setRole(role);
+
+        if (role == Role.WARGA && signUpRequest.getLocationId() != null) {
+            WasteLocation location = wasteLocationRepository.findById(signUpRequest.getLocationId()).orElse(null);
+            user.setLocation(location);
+        }
+
         userRepository.save(user);
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
